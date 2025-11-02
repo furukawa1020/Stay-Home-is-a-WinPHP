@@ -1,42 +1,150 @@
+# ==========================================
 # 孤独優勝クエスト - Git除外設定
+# ==========================================
 
-# 環境設定
-.env
-config.local.php
-
-# ログファイル
-*.log
+# ==========================================
+# ログ・キャッシュ
+# ==========================================
 logs/
-
-# キャッシュ
+logs/*.log
 cache/
+cache/**/*
 tmp/
 *.cache
 
-# IDE設定
+# ==========================================
+# 環境設定ファイル（機密情報）
+# ==========================================
+.env
+.env.php
+.env.local
+.env.*.local
+config.local.php
+
+# ==========================================
+# OS生成ファイル
+# ==========================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ==========================================
+# エディタ・IDE設定
+# ==========================================
+
+# Visual Studio Code
 .vscode/
+*.code-workspace
+
+# JetBrains IDEs (PhpStorm, IntelliJ, etc.)
 .idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
 *.sublime-project
 *.sublime-workspace
 
-# OS生成ファイル
-.DS_Store
-Thumbs.db
-desktop.ini
+# Vim
+*.swp
+*.swo
+.netrwhist
 
-# バックアップファイル
-*.bak
-*.backup
-*~
+# ==========================================
+# PHP関連
+# ==========================================
 
-# Node.js（将来の拡張用）
-node_modules/
-package-lock.json
-
-# PHP依存関係（Composerを使う場合）
+# Composer
 vendor/
+composer.phar
 composer.lock
 
-# テストファイル
+# PHPUnit
+.phpunit.result.cache
+phpunit.xml
+
+# PHP CS Fixer
+.php_cs.cache
+.php-cs-fixer.cache
+
+# ==========================================
+# バックアップ・一時ファイル
+# ==========================================
+*.bak
+*.backup
+*.old
+*.tmp
+*.temp
+
+# ==========================================
+# テスト・デバッグファイル
+# ==========================================
 test.php
 debug.php
+phpinfo.php
+
+# ==========================================
+# データベース（将来用）
+# ==========================================
+*.sql
+*.sqlite
+*.db
+
+# ==========================================
+# セキュリティ・証明書
+# ==========================================
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# ==========================================
+# アップロードファイル（将来用）
+# ==========================================
+uploads/
+user_data/
+
+# ==========================================
+# ビルド成果物
+# ==========================================
+dist/
+build/
+out/
+
+# ==========================================
+# Node.js関連（将来の拡張用）
+# ==========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ==========================================
+# その他
+# ==========================================
+.htpasswd
+error_log
+
