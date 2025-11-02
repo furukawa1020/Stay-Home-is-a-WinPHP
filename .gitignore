@@ -1,0 +1,42 @@
+# 孤独優勝クエスト - Git除外設定
+
+# 環境設定
+.env
+config.local.php
+
+# ログファイル
+*.log
+logs/
+
+# キャッシュ
+cache/
+tmp/
+*.cache
+
+# IDE設定
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# バックアップファイル
+*.bak
+*.backup
+*~
+
+# Node.js（将来の拡張用）
+node_modules/
+package-lock.json
+
+# PHP依存関係（Composerを使う場合）
+vendor/
+composer.lock
+
+# テストファイル
+test.php
+debug.php
