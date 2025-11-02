@@ -1,9 +1,43 @@
+# ==========================================
 # 孤独優勝クエスト - Apache設定
+# ==========================================
 
-# PHPエラー表示（開発環境のみ）
-# 本番環境ではコメントアウト
-php_flag display_errors On
-php_value error_reporting E_ALL
+# ==========================================
+# セキュリティ設定
+# ==========================================
+
+# ディレクトリリスティング無効化
+Options -Indexes
+
+# シンボリックリンク無効化（セキュリティ強化）
+Options -FollowSymLinks
+
+# .htaccessへのアクセス拒否
+<Files .htaccess>
+    Require all denied
+</Files>
+
+# .gitファイルへのアクセス拒否
+<FilesMatch "^\.git">
+    Require all denied
+</FilesMatch>
+
+# 環境設定ファイルへのアクセス拒否
+<FilesMatch "\.(env|ini|log|md|sql|bak|backup|old)$">
+    Require all denied
+</FilesMatch>
+
+# composer.jsonへのアクセス拒否
+<FilesMatch "^(composer|package)\.(json|lock)$">
+    Require all denied
+</FilesMatch>
+
+# ログ・キャッシュディレクトリへのアクセス拒否
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^logs/ - [F,L]
+    RewriteRule ^cache/ - [F,L]
+</IfModule>
 
 # 文字コード
 AddDefaultCharset UTF-8
@@ -11,7 +45,10 @@ AddDefaultCharset UTF-8
 # インデックスファイル
 DirectoryIndex index.php index.html
 
+# ==========================================
 # セキュリティヘッダー
+# ==========================================
+
 <IfModule mod_headers.c>
     # XSS対策
     Header set X-XSS-Protection "1; mode=block"
@@ -19,14 +56,51 @@ DirectoryIndex index.php index.html
     # クリックジャッキング対策
     Header set X-Frame-Options "SAMEORIGIN"
     
-    # コンテンツタイプスニッフィング防止
+    # MIMEタイプスニッフィング対策
     Header set X-Content-Type-Options "nosniff"
     
-    # Referrer Policy
+    # リファラーポリシー
     Header set Referrer-Policy "no-referrer-when-downgrade"
+    
+    # Permissionsポリシー
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    
+    # Content Security Policy（開発環境用：緩め）
+    Header set Content-Security-Policy "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com;"
 </IfModule>
 
+# ==========================================
+# HTTPS強制（本番環境推奨・開発環境ではコメントアウト）
+# ==========================================
+
+# <IfModule mod_rewrite.c>
+#     RewriteEngine On
+#     RewriteCond %{HTTPS} off
+#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
+
+# ==========================================
+# URL リライト（クリーンURL）
+# ==========================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /PHPdenanika/
+    
+    # 既存ファイル・ディレクトリはスキップ
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # 拡張子なしでPHPファイルアクセス（オプション）
+    # 例: /result → /result.php
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^([^\.]+)$ $1.php [L]
+</IfModule>
+
+# ==========================================
 # キャッシュ制御
+# ==========================================
+
 <IfModule mod_expires.c>
     ExpiresActive On
     
@@ -39,22 +113,90 @@ DirectoryIndex index.php index.html
     ExpiresByType image/png "access plus 1 month"
     ExpiresByType image/gif "access plus 1 month"
     ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    
+    # フォント
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
     
     # HTML（動的なので短め）
     ExpiresByType text/html "access plus 10 minutes"
+    
+    # JSON
+    ExpiresByType application/json "access plus 1 hour"
 </IfModule>
 
+# Cache-Controlヘッダー
+<IfModule mod_headers.c>
+    # 静的ファイルに長期キャッシュ
+    <FilesMatch "\.(jpg|jpeg|png|gif|svg|webp|css|js|woff|woff2)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    
+    # PHPファイルはキャッシュしない
+    <FilesMatch "\.(php)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
+# ==========================================
 # Gzip圧縮
+# ==========================================
+
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
 </IfModule>
 
+# ==========================================
+# PHPディレクティブ（php.iniが編集不可の場合）
+# ==========================================
+
+# PHPエラー表示（開発環境のみ）
+# 本番環境ではコメントアウト
+php_flag display_errors On
+php_value error_reporting E_ALL
+
+# エラーログ有効化
+php_flag log_errors On
+php_value error_log logs/php_errors.log
+
+# セッション設定
+php_value session.gc_maxlifetime 86400
+php_value session.cookie_httponly 1
+php_value session.cookie_secure 0
+# HTTPS環境では1に変更: php_value session.cookie_secure 1
+
+# アップロード制限
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+
+# 実行時間制限
+php_value max_execution_time 30
+php_value max_input_time 60
+
+# メモリ制限
+php_value memory_limit 128M
+
+# ==========================================
 # セキュアディレクトリアクセス制限
+# ==========================================
+
+# dataディレクトリ内のPHPファイルへの直接アクセス拒否
 <FilesMatch "^(dialogue|meta|api)\.php$">
     Order Allow,Deny
     Deny from all
 </FilesMatch>
 
+# ==========================================
 # エラーページ（オプション）
-# ErrorDocument 404 /404.html
-# ErrorDocument 500 /500.html
+# ==========================================
+
+# ErrorDocument 404 /PHPdenanika/404.php
+# ErrorDocument 500 /PHPdenanika/500.php
+# ErrorDocument 403 /PHPdenanika/403.php
+
+# ==========================================
+# 終了
+# ==========================================
+
