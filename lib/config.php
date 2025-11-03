@@ -205,9 +205,20 @@ if (!function_exists('getTimeOfDay')) {
  */
 if (!function_exists('generateSmartFallbackOpi')) {
     function generateSmartFallbackOpi() {
-        $timeOfDay = getTimeOfDay();
+        $hour = (int)date('H');
         
-        // 時間帯別の重み付け（定数を配列として再定義）
+        // 時間帯判定
+        if ($hour >= 5 && $hour < 12) {
+            $timeOfDay = 'morning';
+        } elseif ($hour >= 12 && $hour < 17) {
+            $timeOfDay = 'noon';
+        } elseif ($hour >= 17 && $hour < 21) {
+            $timeOfDay = 'evening';
+        } else {
+            $timeOfDay = 'night';
+        }
+        
+        // 時間帯別の重み付け
         $weights_config = [
             'morning' => ['min' => 25, 'max' => 50],
             'noon' => ['min' => 45, 'max' => 75],
@@ -231,7 +242,8 @@ if (!function_exists('generateSmartFallbackOpi')) {
         }
         
         // 祝日判定（簡易版）
-        if (isHoliday()) {
+        $holidays = ['01-01', '01-02', '01-03', '05-03', '05-04', '05-05'];
+        if (in_array(date('m-d'), $holidays)) {
             $min = min(100, $min + 15);
             $max = min(100, $max + 15);
         }
