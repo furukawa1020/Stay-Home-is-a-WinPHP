@@ -189,25 +189,28 @@ function getOpiTip($opi) {
 /**
  * 時間帯を取得
  */
-function getTimeOfDay() {
-    $hour = (int)date('H');
-    if ($hour >= 5 && $hour < 12) return 'morning';
-    if ($hour >= 12 && $hour < 17) return 'noon';
-    if ($hour >= 17 && $hour < 21) return 'evening';
-    return 'night';
+if (!function_exists('getTimeOfDay')) {
+    function getTimeOfDay() {
+        $hour = (int)date('H');
+        if ($hour >= 5 && $hour < 12) return 'morning';
+        if ($hour >= 12 && $hour < 17) return 'noon';
+        if ($hour >= 17 && $hour < 21) return 'evening';
+        return 'night';
+    }
 }
 
 /**
  * スマートフォールバックOPI生成
  * 時間帯を考慮したリアルな値を生成
  */
-function generateSmartFallbackOpi() {
-    $timeOfDay = getTimeOfDay();
-    $weights = FALLBACK_OPI_WEIGHTS[$timeOfDay];
-    
-    // 曜日による補正
-    $dayOfWeek = (int)date('w');
-    $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
+if (!function_exists('generateSmartFallbackOpi')) {
+    function generateSmartFallbackOpi() {
+        $timeOfDay = getTimeOfDay();
+        $weights = FALLBACK_OPI_WEIGHTS[$timeOfDay];
+        
+        // 曜日による補正
+        $dayOfWeek = (int)date('w');
+        $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
     
     $min = $weights['min'];
     $max = $weights['max'];
@@ -225,34 +228,38 @@ function generateSmartFallbackOpi() {
     }
     
     return rand($min, $max);
+    }
 }
 
 /**
  * 祝日判定（簡易版）
  */
-function isHoliday() {
-    // TODO: 実際の祝日カレンダーと連携
-    $holidays = [
-        '01-01', '01-02', '01-03', // 正月
-        '05-03', '05-04', '05-05', // GW
+if (!function_exists('isHoliday')) {
+    function isHoliday() {
+        // TODO: 実際の祝日カレンダーと連携
+        $holidays = [
+            '01-01', '01-02', '01-03', // 正月
+            '05-03', '05-04', '05-05', // GW
         '08-11', '08-12', '08-13', '08-14', '08-15', // お盆
         '12-29', '12-30', '12-31' // 年末
     ];
     
     return in_array(date('m-d'), $holidays);
+    }
 }
 
 /**
  * 統計記録
  */
-function recordStatistics($opi, $difficulty, $userId) {
-    if (!CACHE_ENABLED) return;
-    
-    $statsFile = CACHE_DIR . '/statistics.json';
-    $stats = [];
-    
-    if (file_exists($statsFile)) {
-        $stats = json_decode(file_get_contents($statsFile), true) ?: [];
+if (!function_exists('recordStatistics')) {
+    function recordStatistics($opi, $difficulty, $userId) {
+        if (!CACHE_ENABLED) return;
+        
+        $statsFile = CACHE_DIR . '/statistics.json';
+        $stats = [];
+        
+        if (file_exists($statsFile)) {
+            $stats = json_decode(file_get_contents($statsFile), true) ?: [];
     }
     
     $today = date('Y-m-d');
@@ -282,4 +289,5 @@ function recordStatistics($opi, $difficulty, $userId) {
     }
     
     file_put_contents($statsFile, json_encode($stats, JSON_PRETTY_PRINT));
+    }
 }
