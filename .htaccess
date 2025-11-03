@@ -6,8 +6,8 @@
 # セキュリティ設定
 # ==========================================
 
-# ディレクトリリスティング無効化
-Options -Indexes
+# ディレクトリリスティング無効化とシンボリックリンク許可
+Options -Indexes +FollowSymLinks
 
 # アクセス許可
 <IfModule mod_authz_core.c>
