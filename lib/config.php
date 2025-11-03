@@ -206,7 +206,16 @@ if (!function_exists('getTimeOfDay')) {
 if (!function_exists('generateSmartFallbackOpi')) {
     function generateSmartFallbackOpi() {
         $timeOfDay = getTimeOfDay();
-        $weights = FALLBACK_OPI_WEIGHTS[$timeOfDay];
+        
+        // 時間帯別の重み付け（定数を配列として再定義）
+        $weights_config = [
+            'morning' => ['min' => 25, 'max' => 50],
+            'noon' => ['min' => 45, 'max' => 75],
+            'evening' => ['min' => 60, 'max' => 90],
+            'night' => ['min' => 20, 'max' => 45]
+        ];
+        
+        $weights = $weights_config[$timeOfDay];
         
         // 曜日による補正
         $dayOfWeek = (int)date('w');
