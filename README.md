@@ -59,14 +59,32 @@
 # https://www.apachefriends.org/download.html からダウンロード
 ```
 
-1. **リポジトリをクローン**
-
-```bash
-git clone https://github.com/furukawa1020/Stay-Home-is-a-WinPHP.git
-cd Stay-Home-is-a-WinPHP
+2. **プロジェクトを配置**
+```powershell
+# ダウンロードまたはクローンしたプロジェクトを移動
+Copy-Item -Path ".\PHPdenanika" -Destination "C:\xampp\htdocs\" -Recurse
 ```
 
-2. **権限設定**
+3. **Apache起動**
+```
+XAMPPコントロールパネルから Apache を Start
+```
+
+4. **ブラウザで開く**
+```
+http://localhost/PHPdenanika/index.php
+```
+
+### PHP内蔵サーバーでの起動（開発用）
+
+```bash
+cd PHPdenanika
+php -S localhost:8000
+```
+
+ブラウザで `http://localhost:8000` にアクセス
+
+### 権限設定（Linux/Mac）
 
 ```bash
 chmod 755 -R .
@@ -74,22 +92,7 @@ chmod 777 logs/
 chmod 777 cache/
 ```
 
-Windowsの場合は、`logs/`と`cache/`ディレクトリに書き込み権限を付与してください。
-
-3. **環境設定（オプション）**
-
-API設定をカスタマイズする場合：
-
-```bash
-cp .env.example.php .env.php
-# .env.phpを編集
-```
-
-4. **ブラウザで開く**
-
-```
-http://localhost/PHPdenanika/index.php
-```
+Windowsでは自動的に書き込み権限が設定されます。
 
 ---
 
@@ -147,13 +150,16 @@ http://localhost/PHPdenanika/index.php
 
 | 称号 | 条件 | アイコン |
 |-----|------|---------|
-| 経験値1K達成 | 総経験値1,000以上 | 🌟 |
-| 経験値5K達成 | 総経験値5,000以上 | 💫 |
-| コンボ初心者 | コンボ3連鎖達成 | 🔗 |
-| コンボマスター | コンボ10連鎖達成 | ⚡ |
-| 夜更かし族 | 深夜行動5回 | 🌙 |
-| 早起き族 | 朝行動5回 | 🌅 |
-| 孤高の引きこもり | 在宅20連続 | 🏔️ |
+| 🌱 初心者 | 総経験値0-99 | 🌱 |
+| 🌿 在宅見習い | 総経験値100-499 | � |
+| 🍃 引きこもり初段 | 総経験値500-999 | 🍃 |
+| 🌟 引きこもり達人 | 総経験値1,000-2,499 | 🌟 |
+| 💫 孤独の探求者 | 総経験値2,500-4,999 | 💫 |
+| ⭐ 在宅の賢者 | 総経験値5,000-9,999 | ⭐ |
+| 🌠 孤高の哲学者 | 総経験値10,000-24,999 | 🌠 |
+| ✨ 引きこもり宗匠 | 総経験値25,000-49,999 | ✨ |
+| 🔮 孤独の求道者 | 総経験値50,000-99,999 | 🔮 |
+| 👑 伝説の引きこもり | 総経験値100,000以上 | 👑 |
 
 ---
 
@@ -200,9 +206,9 @@ PHPdenanika/
 │   ├── cache.php          # キャッシュ
 │   ├── validator.php      # バリデーター
 │   └── scene_generator.php # シーン生成
-├── data/                  # データ
-│   ├── dialogue.php       # セリフ辞書
-│   └── meta.php           # メタデータ
+├── lib/                   # （続き）
+│   ├── dialogue.php       # セリフ生成
+│   └── meta.php           # メタデータ・OGP生成
 ├── logs/                  # ログ（自動生成）
 ├── cache/                 # キャッシュ（自動生成）
 ├── DEVELOPMENT.md         # 開発者向けドキュメント
@@ -213,20 +219,25 @@ PHPdenanika/
 
 ## ⚙️ 設定
 
-### API設定
+### フォールバックOPI生成
 
-`lib/config.php`で人流APIのエンドポイントを設定：
+`lib/config.php`の`generateSmartFallbackOpi()`関数：
 
 ```php
-define('PEOPLE_FLOW_API_URL', 'https://api.example.com/people-flow');
-define('PEOPLE_FLOW_API_KEY', 'your_api_key_here');
+// 時間帯別の基本範囲
+- 朝（6-11時）:   25-50 OPI
+- 昼（12-17時）:  45-75 OPI  
+- 夕方（18-22時）: 60-90 OPI
+- 夜（23-5時）:   20-45 OPI
+
+// ボーナス加算
+- 週末: +10 OPI
+- 祝日: +15 OPI
 ```
 
-APIが利用できない場合、スマートフォールバック機能により、時間帯と曜日を考慮したOPIが自動生成されます。
+APIが利用できない場合、現実的な人流パターンを反映したOPIが自動生成されます。
 
-### 環境変数
-
-`.env.php`（オプション）でカスタマイズ可能：
+### 環境変数（`.env.php`）
 
 ```php
 define('APP_ENV', 'production'); // development, staging, production
@@ -238,6 +249,51 @@ define('CACHE_ENABLED', true);
 
 ## 🐛 トラブルシューティング
 
+## 🐛 トラブルシューティング
+
+### HTTP 403 Forbidden
+
+**原因**: `.htaccess`のシンボリックリンク設定が無効
+
+**解決策**:
+```apache
+# .htaccessに追加
+Options +FollowSymLinks
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+```
+
+### HTTP 500 Internal Server Error
+
+**原因1**: PHP構文エラー
+```bash
+# エラーログを確認
+tail -f C:\xampp\apache\logs\error.log
+```
+
+**原因2**: ファイルパスの不一致
+- `lib/`ディレクトリ内のすべてのファイルが存在するか確認
+- `require_once`のパスが正しいか確認
+
+### Parse Error in .env.php
+
+**原因**: `define()`文の構文エラー
+
+**解決策**: `.env.php`を再作成
+```php
+<?php
+if (!defined('APP_ENV')) define('APP_ENV', 'production');
+if (!defined('LOG_ENABLED')) define('LOG_ENABLED', true);
+?>
+```
+
+### TypeError: Illegal offset type
+
+**原因**: 配列キーの型エラー
+
+**解決策**: `lib/config.php`の`generateSmartFallbackOpi()`関数で、配列定数ではなくローカル変数を使用
+
 ### ログが記録されない
 
 - `logs/`ディレクトリの書き込み権限を確認
@@ -248,16 +304,80 @@ define('CACHE_ENABLED', true);
 - `cache/`ディレクトリの書き込み権限を確認
 - `CACHE_ENABLED`が`true`か確認
 
-### セッションエラー
+### APIフォールバック動作
 
-- PHPの`session.save_path`を確認
-- セッションディレクトリの書き込み権限を確認
+**確認方法**:
+1. ブラウザでゲームをプレイ
+2. OPI値が表示されればフォールバック機能が動作中
+3. `logs/app.log`で"Fallback OPI generated"を確認
 
-### API接続失敗
+---
 
-- `PEOPLE_FLOW_API_URL`が正しいか確認
-- ネットワーク接続を確認
-- フォールバック機能により、動作は継続します
+## 🎨 カスタマイズ
+
+### テーマカラー変更
+
+`style.css`のカスタムプロパティを編集：
+
+```css
+:root {
+    --primary-color: #667eea;      /* プライマリカラー */
+    --secondary-color: #764ba2;    /* セカンダリカラー */
+    --accent-color: #f093fb;       /* アクセントカラー */
+}
+```
+
+### 行動追加
+
+`lib/config.php`の`STAY_ACTIONS`配列に追加：
+
+```php
+const STAY_ACTIONS = [
+    // ... 既存の行動
+    [
+        'id' => 'custom_action',
+        'title' => 'カスタム行動',
+        'emoji' => '🎯',
+        'base_xp' => 80,
+        'tags' => ['カスタム', 'ユニーク']
+    ]
+];
+```
+
+---
+
+---
+
+## 📊 実装状況
+
+### ✅ 完了機能
+
+- **コアシステム**
+  - ✅ OPI取得（APIフォールバック付き）
+  - ✅ セッション管理
+  - ✅ 経験値計算
+  - ✅ 6種類のボーナス
+  - ✅ 4パターンのコンボ
+  - ✅ 10段階の称号
+  
+- **セキュリティ**
+  - ✅ CSRF保護
+  - ✅ XSS対策
+  - ✅ 入力バリデーション
+  - ✅ セキュアヘッダー
+
+- **インフラ**
+  - ✅ PSR-3準拠ログ
+  - ✅ ファイルベースキャッシュ
+  - ✅ エラーハンドリング
+  - ✅ XAMPP完全対応
+
+### 🚀 デプロイ済み
+
+- **環境**: Windows + XAMPP
+- **URL**: `http://localhost/PHPdenanika/index.php`
+- **状態**: Production Ready
+- **API**: フォールバックモード稼働中
 
 ---
 
@@ -271,6 +391,12 @@ define('CACHE_ENABLED', true);
 4. プッシュ（`git push origin feature/amazing-feature`）
 5. プルリクエスト作成
 
+**開発ガイドライン**:
+- PSR-12 コーディング規約に準拠
+- 新機能には単体テストを追加
+- コメントはPHPDocで記述
+- エラーハンドリングを必ず実装
+
 ---
 
 ## 📝 ライセンス
@@ -279,22 +405,43 @@ MIT License - 詳細は[LICENSE](LICENSE)ファイルを参照してください
 
 ---
 
-## 👨‍💻 開発者
+## � リンク
 
-- **GitHub**: [@furukawa1020](https://github.com/furukawa1020)
 - **Repository**: [Stay-Home-is-a-WinPHP](https://github.com/furukawa1020/Stay-Home-is-a-WinPHP)
+- **Issues**: [GitHub Issues](https://github.com/furukawa1020/Stay-Home-is-a-WinPHP/issues)
+- **Documentation**: [DEVELOPMENT.md](DEVELOPMENT.md)
 
 ---
 
 ## 🙏 謝辞
 
-- Google Fonts（Inter, JetBrains Mono）
-- グラスモーフィズムデザインコミュニティ
-- PHP & Apache コミュニティ
+このプロジェクトは以下の技術・コミュニティの恩恵を受けています：
+
+- **PHP Community** - エンタープライズグレードのOOPアーキテクチャ
+- **Google Fonts** - Inter & JetBrains Mono
+- **Glassmorphism Design Community** - モダンUIインスピレーション
+- **Apache HTTP Server** - 安定したWebサーバー
+- **XAMPP** - ローカル開発環境
 
 ---
 
-## 📞 サポート
+## 📞 サポート & フィードバック
+
+**バグ報告**: [GitHub Issues](https://github.com/furukawa1020/Stay-Home-is-a-WinPHP/issues)  
+**機能要望**: [GitHub Discussions](https://github.com/furukawa1020/Stay-Home-is-a-WinPHP/discussions)  
+**開発者**: [@furukawa1020](https://github.com/furukawa1020)
+
+---
+
+<div align="center">
+
+**🏠 Stay Home is a Win 🏆**
+
+*孤独を讃え、在宅を楽しむ。あなたの選択が、勝利です。*
+
+Made with ❤️ and PHP
+
+</div>
 
 問題が発生した場合は、[Issues](https://github.com/furukawa1020/Stay-Home-is-a-WinPHP/issues)で報告してください。
 
