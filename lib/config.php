@@ -220,23 +220,23 @@ if (!function_exists('generateSmartFallbackOpi')) {
         // 曜日による補正
         $dayOfWeek = (int)date('w');
         $isWeekend = ($dayOfWeek === 0 || $dayOfWeek === 6);
-    
-    $min = $weights['min'];
-    $max = $weights['max'];
-    
-    // 週末は+10
-    if ($isWeekend) {
-        $min = min(100, $min + 10);
-        $max = min(100, $max + 10);
-    }
-    
-    // 祝日判定（簡易版）
-    if (isHoliday()) {
-        $min = min(100, $min + 15);
-        $max = min(100, $max + 15);
-    }
-    
-    return rand($min, $max);
+        
+        $min = $weights['min'];
+        $max = $weights['max'];
+        
+        // 週末は+10
+        if ($isWeekend) {
+            $min = min(100, $min + 10);
+            $max = min(100, $max + 10);
+        }
+        
+        // 祝日判定（簡易版）
+        if (isHoliday()) {
+            $min = min(100, $min + 15);
+            $max = min(100, $max + 15);
+        }
+        
+        return rand($min, $max);
     }
 }
 
