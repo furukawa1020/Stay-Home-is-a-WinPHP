@@ -30,8 +30,8 @@ require_once __DIR__ . '/lib/logger.php';
 require_once __DIR__ . '/lib/cache.php';
 require_once __DIR__ . '/lib/validator.php';
 require_once __DIR__ . '/lib/scene_generator.php';
-require_once __DIR__ . '/data/dialogue.php';
-require_once __DIR__ . '/data/meta.php';
+require_once __DIR__ . '/lib/dialogue.php';
+require_once __DIR__ . '/lib/meta.php';
 
 // ロガー初期化
 $logger = new Logger(__DIR__ . '/logs/app.log');
