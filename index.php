@@ -117,7 +117,7 @@ try {
     $scene = generateFallbackScene($opi);
     $apiSource = 'error_fallback';
 }
-
+?>
 <!DOCTYPE html>
 <html lang="ja" prefix="og: http://ogp.me/ns#">
 <head>
