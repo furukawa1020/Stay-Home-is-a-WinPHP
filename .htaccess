@@ -9,8 +9,10 @@
 # ディレクトリリスティング無効化
 Options -Indexes
 
-# シンボリックリンク無効化（セキュリティ強化）
-Options -FollowSymLinks
+# アクセス許可
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
 
 # .htaccessへのアクセス拒否
 <Files .htaccess>
